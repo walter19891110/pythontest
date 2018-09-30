@@ -57,7 +57,7 @@ def test_dev_verify_noredis():
         print('use time', time_end - time_start)
 
 if __name__ == "__main__":
-    #web_client()
+
     #performance_test()
     #test()
-    test_dev_verify_noredis()
+    #test_dev_verify_noredis()
