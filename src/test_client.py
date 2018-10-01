@@ -59,6 +59,5 @@ def test_dev_verify_noredis():
 if __name__ == "__main__":
 
     performance_test()
-    print('this is a dev ')
     #test()
     #test_dev_verify_noredis()
