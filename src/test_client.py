@@ -56,6 +56,7 @@ def test_dev_verify_noredis():
         time_end = time.time()
         print('use time', time_end - time_start)
 
+
 if __name__ == "__main__":
 
     performance_test()
