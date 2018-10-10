@@ -2,6 +2,15 @@ import psutil
 import hashlib
 import platform
 import re
+import requests
+from requests_toolbelt import SSLAdapter
+import time
+
+# 设置HTTPS
+adapter = SSLAdapter('TLSv1.2')  # 设置证书验证方式为TLSv1.2
+r = requests.Session()
+r.mount('https://', adapter)  # 设置HTTPS的SSL适配器
+ca_file = '../certs/chain-ca.pem'  # 设置根证书
 
 
 def test_com():
@@ -142,7 +151,7 @@ def soft_run_control(user_list):
 
 def soft_run_info(p):
     if p.name() == "java":  # Java程序
-        print("进程启动的命令行:", p.cmdline())  # 进程启动的命令行
+        # print("进程启动的命令行:", p.cmdline())  # 进程启动的命令行
         cmd_str = p.cmdline()[2]  # 获取jar文件路径
         jar_str = cmd_str.split("/")[-1]  # 获取jar文件名
         match_str = r"\.jar$"
@@ -151,15 +160,21 @@ def soft_run_info(p):
             if cmd_str[0] != "/":  # 路径第一个字符不是'/'，说明不是使用的绝对路径
                 cmd_str = p.cwd() + "/" + cmd_str  # 和工作目录一起，拼接出绝对路径
 
-            verify_md5(cmd_str)
+            res = verify_md5(cmd_str)
+            if res["ret_code"] != 0:
+                print(jar_str[:-4], res["msg"])
         else:
-            # 不是使用jar文件启动的，如ES、spark、hadoop等，挨个排查系统中部署的此类软件
+            # 不是使用jar文件启动的，如ES、spark、hadoop等，逐个排查系统中部署的此类软件
             cmd_str = " ".join(p.cmdline())
             # print(cmd_str)
-            # -------读取常用非jar文件运行的软件列表------ #
-            not_control_list = ["elasticsearch", "spark"]  # 正式程序中需从配置文件中读取
+            # ============从服务端读取常用非jar文件运行的软件列表=========== #
+            get_soft_list_api = "https://127.0.0.1:5000/api/soft/get_soft_list"
+            r = requests.get(get_soft_list_api, verify=ca_file)
+            if r.status_code != 200:
+                return {"ret_code": r.status_code, "msg": "error"}
+            soft_list = r.json()["softlist"].keys()
             illegal = True  # 是否为非法启动
-            for match_str in not_control_list:
+            for match_str in soft_list:
                 if re.search(match_str, cmd_str) is not None:
                     illegal = False
                     print(match_str + "不需进行版本控制!")
@@ -170,22 +185,25 @@ def soft_run_info(p):
                 print("非法程序, 启动命令为", cmd_str)
                 # -----生成告警-------- #
 
-        print("\n")
-    elif p.name() == "Python":
-        print("进程启动的命令行:", p.cmdline())  # 进程启动的命令行
+        # print("\n")
+    elif p.name() == "Python" or p.name() == "python3.6":
+        # print("进程启动的命令行:", p.cmdline())  # 进程启动的命令行
         cmd_str = p.cmdline()[1]
         if cmd_str[0] != "/":  # 路径第一个字符不是'/'，说明不是使用的绝对路径
             cmd_str = p.cwd() + "/" + cmd_str  # 和工作目录一起，拼接出绝对路径
 
-        verify_md5(cmd_str)
-        print("\n")
+        res = verify_md5(cmd_str)
+        if res["ret_code"] != 0:
+            print(cmd_str, res["msg"])
+        # print("\n")
     else:
         # c语言程序直接使用p.exe()，即可找到主程序文件
-        verify_md5(p.exe())
+        # verify_md5(p.exe())
+        pass
 
 
 def verify_md5(filename):
-    soft_name = filename.split("/")[-1]
+    soft_name = filename.split("/")[-1][:-4]  # 获取无后缀的软件名
     os_name = platform.system()
     soft_id = soft_name + "_" + os_name
     soft_md5 = ""
@@ -194,10 +212,14 @@ def verify_md5(filename):
         md5 = hashlib.md5()
         md5.update(data)
         soft_md5 = md5.hexdigest()
-    # print(soft_id, soft_md5)
-    # -----校验MD5----- #
-    # print("向服务端请求校验MD5值")
-    # -----校验MD5----- #
+
+    verify_soft_code_api = "https://127.0.0.1:5000/api/soft/verify_soft_code"
+    data = {"softID": soft_id, "type": 1, "code": soft_md5}
+    r = requests.post(verify_soft_code_api, json=data, verify=ca_file)
+    # print(r.status_code)
+    if r.status_code != 200:
+        return {"ret_code": r.status_code, "msg": "error"}
+    return r.json()
 
 
 if __name__ == "__main__":
@@ -205,8 +227,12 @@ if __name__ == "__main__":
     os = platform.system()
     print("操作系统为", os)
     # test_pro()
-    user_list = ["walter"]
-    soft_run_control(user_list)
+    users = ["walter"]
+    while True:
+        soft_run_control(users)
+        time.sleep(60)
+
+
 
 
 
