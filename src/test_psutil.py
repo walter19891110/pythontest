@@ -1,16 +1,52 @@
 import psutil
 import hashlib
+import os
+import sys
 import platform
 import re
 import requests
 from requests_toolbelt import SSLAdapter
 import time
 
+
+# ===================================================================
+# --- 判断操作系统，如果表达式成立就返回True
+# ===================================================================
+
+
+POSIX = os.name == "posix"
+WINDOWS = os.name == "nt"
+LINUX = sys.platform.startswith("linux")
+OSX = sys.platform.startswith("darwin")
+FREEBSD = sys.platform.startswith("freebsd")
+OPENBSD = sys.platform.startswith("openbsd")
+NETBSD = sys.platform.startswith("netbsd")
+BSD = FREEBSD or OPENBSD or NETBSD
+SUNOS = sys.platform.startswith("sunos") or sys.platform.startswith("solaris")
+
+
+# ===================================================================
+# --- 初始化
+# ===================================================================
+
+
+soft_list = list()  # 免于版本控制的软件列表
+
 # 设置HTTPS
 adapter = SSLAdapter('TLSv1.2')  # 设置证书验证方式为TLSv1.2
 r = requests.Session()
 r.mount('https://', adapter)  # 设置HTTPS的SSL适配器
 ca_file = '../certs/chain-ca.pem'  # 设置根证书
+
+
+def init():
+    global soft_list
+    # ============从服务端读取常用非jar文件运行的软件列表=========== #
+    get_soft_list_api = "https://127.0.0.1:5000/api/soft/get_soft_list"
+    r = requests.get(get_soft_list_api, verify=ca_file)
+    if r.status_code != 200:
+        return
+    soft_list = r.json()["softlist"].keys()
 
 
 def test_com():
@@ -150,6 +186,7 @@ def soft_run_control(user_list):
 
 
 def soft_run_info(p):
+    global soft_list
     if p.name() == "java":  # Java程序
         # print("进程启动的命令行:", p.cmdline())  # 进程启动的命令行
         cmd_str = p.cmdline()[2]  # 获取jar文件路径
@@ -167,12 +204,6 @@ def soft_run_info(p):
             # 不是使用jar文件启动的，如ES、spark、hadoop等，逐个排查系统中部署的此类软件
             cmd_str = " ".join(p.cmdline())
             # print(cmd_str)
-            # ============从服务端读取常用非jar文件运行的软件列表=========== #
-            get_soft_list_api = "https://127.0.0.1:5000/api/soft/get_soft_list"
-            r = requests.get(get_soft_list_api, verify=ca_file)
-            if r.status_code != 200:
-                return {"ret_code": r.status_code, "msg": "error"}
-            soft_list = r.json()["softlist"].keys()
             illegal = True  # 是否为非法启动
             for match_str in soft_list:
                 if re.search(match_str, cmd_str) is not None:
@@ -224,13 +255,16 @@ def verify_md5(filename):
 
 if __name__ == "__main__":
 
-    os = platform.system()
-    print("操作系统为", os)
+    os_name = platform.system()
+    print("操作系统为", os_name)
     # test_pro()
-    users = ["walter"]
-    while True:
-        soft_run_control(users)
-        time.sleep(60)
+    print(os.name)
+    print(sys.platform.startswith("darwin"))
+    # init()
+    # users = ["walter"]
+    # while True:
+    #     soft_run_control(users)
+    #     time.sleep(60)
 
 
 

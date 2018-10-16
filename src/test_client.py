@@ -24,21 +24,21 @@ def performance_test():
 
 def test():
     # 设置HTTPS
-    adapter = SSLAdapter('TLSv1.2')  # 设置证书验证方式为TLSv1.2
-    r = requests.Session()
-    r.mount('https://', adapter)  # 设置HTTPS的SSL适配器
-    ca_file = '../certs/chain-ca.pem'  # 设置根证书
+    # adapter = SSLAdapter('TLSv1.2')  # 设置证书验证方式为TLSv1.2
+    # r = requests.Session()
+    # r.mount('https://', adapter)  # 设置HTTPS的SSL适配器
+    # ca_file = '../certs/chain-ca.pem'  # 设置根证书
     while True:
         i = 0
         time_start = time.time()
-        while i < 100000:
-            test_api = 'https://127.0.0.1:5000/api/test'
-            data = {"a": 1, "b": 2}
+        while i < 10000:
+            test_api = 'http://127.0.0.1:5000/api/soft/get_soft_list'
+            # data = {"a": 1, "b": 2}
             #r = requests.post(test_api, json=data)
-            r = requests.post(test_api, json=data, verify=ca_file)
+            r = requests.get(test_api)
             i = i+1
         time_end = time.time()
-        print('use time', time_end - time_start)
+        print('restful use time', time_end - time_start)
 
 
 def test_dev_verify_noredis():
@@ -59,6 +59,6 @@ def test_dev_verify_noredis():
 
 if __name__ == "__main__":
 
-    performance_test()
-    #test()
+    # performance_test()
+    test()
     #test_dev_verify_noredis()
