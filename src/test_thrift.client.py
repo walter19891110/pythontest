@@ -28,11 +28,30 @@ def init():
             continue
 
 
+def add_soft():
+    global client
+    soft_dict = SoftInfoDict(
+        softid="Solarized_Darwin",
+        softname="Solarized",
+        osname="Darwin",
+        softmode=0,
+        setupname="Solarized",
+        setupcode="df6a62b5ca3d2e833b49e803ff99f59a",
+        mainfile="Solarized",
+        maincode="df6a62b5ca3d2e833b49e803ff99f59a",
+        desc="Solarized")
+    res = client.add_soft_info(soft_dict)
+    result = json.loads(res)
+    print(result)
+
+
 def run():
+    global client
     print('thrift rpc client start')
     soft_id = "dmdbmon_Darwin"
+    soft_mode = 0
     verify_type = 0
-    verify_code = "e115ec216dc412c0f1d857fcf6e9202b"
+    verify_code = "1"
     j = 0
     while j < 1:
         j += 1
@@ -41,9 +60,15 @@ def run():
         while i < 1:
             # res = client.get_soft_list()
             # res = client.verify_soft_code(soft_id, verify_type, verify_code)
+            # res = client.get_soft_info(soft_id)
+            # res = client.modify_soft_mode(soft_id, soft_mode)
+            # res = client.add_soft_code(soft_id, verify_type, verify_code)
+            res = client.del_soft_code(soft_id, verify_type, verify_code)
+            dic = json.loads(res)
+            print(dic)
             res = client.get_soft_info(soft_id)
             dic = json.loads(res)
-            print(dic["softinfo"])
+            print(dic)
             i = i + 1
         time_end = time.time()
         print('thrift rpc use time', time_end - time_start)
@@ -52,3 +77,4 @@ def run():
 if __name__ == '__main__':
     init()
     run()
+    # add_soft()
