@@ -121,6 +121,21 @@ class MyJWT():
         return res_code
 
 
+def file_name(file_dir):
+    for root, dirs, files in os.walk(file_dir):
+        """
+        print("当前目录")
+        print(root)  # 当前目录
+        print("当前路径下所有子目录")
+        print(dirs)  # 当前路径下所有子目录
+        print("当前路径下所有文件")
+        print(files)  # 当前路径下所有文件
+        """
+        for file in files:
+            if os.path.splitext(file)[1] == '.jpg':
+                print(file)
+
+
 if __name__ == "__main__":
 
     print("test jwt!")
@@ -140,3 +155,6 @@ if __name__ == "__main__":
         res = my_jwt.refresh_token(refresh_token)
         ac = my_jwt.analysis_token(res[1])
         print(ac)
+
+    file_dir = "/Users/walter/Downloads"
+    file_name(file_dir)

@@ -61,7 +61,16 @@ def test_mycpabe():
         cstr.value = item
         string_buffers.append(cstr)
     propertys = (c_char_p * len(property_list))(*map(addressof, string_buffers))  # char**
-    libc.cpabe_keygen(pub_file, msk_file, prv_key, username, property_num, propertys)
+    # libc.cpabe_keygen(pub_file, msk_file, prv_key, username, property_num, propertys)
+    start_time = time.time()
+    i = 0
+    n = 100
+    for i in range(n):  # 循环n次
+        libc.cpabe_keygen(pub_file, msk_file, prv_key, username, property_num, propertys)
+    use_time = time.time() - start_time
+    print("{0} times use time:{1}".format(n, use_time))
+    print("avg time:", use_time / n)
+    print("times for 1s:{}".format(n / use_time))
 
     """加密文件
     cpabe_enc( 
@@ -79,8 +88,7 @@ def test_mycpabe():
     out_file = c_char_p(b"/usr/local/ilogsvr/pythontest/src/a1.cpabe")
     policy = c_char_p(b"wangjing and (id > 1#4) and (office = 2362)")  # 访问控制策略
     start_time = time.time()
-    i = 0
-    n = 1
+
     for i in range(n):  # 循环n次
         enc(keep, pub_file, in_file, out_file, policy)
     use_time = time.time() - start_time

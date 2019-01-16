@@ -18,7 +18,7 @@ class ParseHandler:
     函数名、参数等要与thrift中服务名下定义的接口一致
     """
     def parse2json(self, str):
-        # print("start parse str")
+        print("start parse str")
         json_str = {"server": str}
         return json.dumps(json_str)
 

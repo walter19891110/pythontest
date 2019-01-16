@@ -1,0 +1,29 @@
+一 演示程序
+1. cpabe-backend.rar 服务端代码，需要二中3 对应的工具软件
+2. cpabe-client.rar 包含四个程序，分别对应中心侧初始化(abeacs)，中心侧产生用户私钥(cpabekey)，终端侧加密(abeenc)，终端侧解密(abedec)。
+
+二 CPABE 源码
+1. pbc-0.5.14.tar.gz 依赖包，详见文档
+2. libbswabe-0.9.tar.gz 论文《Ciphertext-Policy Attribute-Based Encryption》对应的CPABE C 代码实现，可以直接编译为接口库
+3. cpabe-0.11.tar.gz 基于2 的封装，可以编译出在Bash 下运行的工具软件
+
+三 开发工具
+1. Linux 环境下Make, GCC 等（自备）
+2. Windows 环境下Visual Studio 2017，（文件visual studio.rar）
+
+四 编译接口库库说明
+1. 编译库接口头文件模板.h 可以用来参照用来如何导出接口
+2. Makefile（修改模板） 可以用来参照如何在Linux 编译动态库
+
+五 文档
+若干供参考，另外参考源码Readme 和Install
+三 开发工具
+1. Linux 环境下Make, GCC 等（自备）
+2. Windows 环境下Visual Studio 2017，（文件visual studio.rar）
+
+四 编译接口库库说明
+1. 编译库接口头文件模板.h 可以用来参照用来如何导出接口
+2. Makefile（修改模板） 可以用来参照如何在Linux 编译动态库
+
+五 文档
+若干供参考，另外参考源码Readme 和Install
